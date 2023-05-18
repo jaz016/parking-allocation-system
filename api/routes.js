@@ -103,7 +103,7 @@ router.post('/park', (req, res, next) => {
 		if(filteredParkingSlotsBySize.length) {
 			console.log('parkData', parkData);
 
-			const filteredParkingSlots = filteredParkingSlotsBySize.filter(slot => parkData.findIndex(pd => pd.slotId === slot.slotId) === -1 );
+			const filteredParkingSlots = filteredParkingSlotsBySize.filter(slot => parkData.findIndex(pd => pd.slotId === slot.slotId && pd.isParked) === -1 );
 			console.log('filteredParkingSlots',filteredParkingSlots);
 
 			if(filteredParkingSlots.length) {
@@ -123,13 +123,18 @@ router.post('/park', (req, res, next) => {
 
 
 				console.log('assignedSlot', assignedSlot);
+
+				const nextParkDataId = parkData.length > 0 ? Math.max(...parkData.map(pd => pd.parkDataId)) + 1 : 1;
+				console.log('nextParkDataId', nextParkDataId);
 				
 
 				// insert into parkData
 				const newParkData = {
+					parkDataId: nextParkDataId,
 					slotId: assignedSlot.slotId,
 					carId: newCar.carId,
-					start: formatISO(utcToZonedTime(new Date(), 'Asia/Manila'))
+					start: formatISO(utcToZonedTime(new Date(), 'Asia/Manila')),
+					isParked: true
 				}
 
 				console.log('newParkData',newParkData);
