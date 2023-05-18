@@ -62,7 +62,7 @@ router.post('/save-parking-lot', (req, res, next) => {
 
 // todo: put it this a controller
 router.post('/park', (req, res, next) => {
-	const { carType } = req.body;
+	const { type } = req.body;
 
 	console.log('jsonData.cars',jsonData.cars);
 	const nextId = jsonData.cars.length > 0 ? Math.max(...jsonData.cars.map(car => car.carId)) + 1 : 1;
@@ -70,7 +70,7 @@ router.post('/park', (req, res, next) => {
 
 	const newCar = {
 		carId: nextId,
-		type: carType,
+		type: type,
 		isParked: true
 	}
 
