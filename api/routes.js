@@ -7,6 +7,7 @@ const data = fs.readFileSync(jsonPath);
 const jsonData = JSON.parse(data);
 
 
+// todo: put it this a controller
 router.post('/save-parking-lot', (req, res, next) => {
 
 	const { entryPoints, parkingSlots } = req.body;
@@ -21,6 +22,9 @@ router.post('/save-parking-lot', (req, res, next) => {
 			return {slotId: i+1, slotData: slot}
 		}),
 	}
+
+	// clear parked cars
+	jsonData.parkData = [];
 
 	fs.writeFile(jsonPath, JSON.stringify(jsonData), (err) => {
 		if(err) {
