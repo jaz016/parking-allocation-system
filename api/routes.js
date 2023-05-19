@@ -12,6 +12,19 @@ const jsonData = JSON.parse(data);
 
 
 // todo: put it this a controller
+router.get('/get-parking-lot', (req, res, next) => {
+	const { parkingLot } = jsonData;
+	return res.status(200).json(parkingLot);
+})
+
+// todo: put it this a controller
+router.get('/get-parking-data', (req, res, next) => {
+	const { parkData } = jsonData;
+	const filteredParkData = parkData.length ? parkData.filter(pd => pd.isParked) : []
+	return res.status(200).json(filteredParkData);
+})
+
+// todo: put it this a controller
 // add validation for parkingSlots input
 router.post('/save-parking-lot', (req, res, next) => {
 
