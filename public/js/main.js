@@ -4,6 +4,8 @@ const parkForm = document.getElementById("park-form");
 let globalParkingSlots = [],
 	globalParkData = [];
 
+const now = moment().utc(8).toISOString();
+
 fetchParkingLot();
 fetchParkData();
 
@@ -58,7 +60,8 @@ async function fetchParkData() {
 		newParkData.forEach(pd => {
 			const li = document.createElement("li");
 			li.className = 'list-group-item';
-			li.textContent = `Slot ${JSON.stringify(pd.slotData)} | Car ID: ${pd.carId} | Type: ? | Elapsed: ? | `;
+			const elapsed = moment.duration(moment(now).diff(moment(pd.start))).asHours().toFixed(1);
+			li.textContent = `Slot ${JSON.stringify(pd.slotData)} | Car ID: ${pd.carId} | Type: ${pd.type.toUpperCase()} | Elapsed: ${elapsed} hrs | `;
 
 			const anchor = document.createElement("a");
 			anchor.className='unpark';

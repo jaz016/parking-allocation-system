@@ -19,8 +19,11 @@ router.get('/get-parking-lot', (req, res, next) => {
 
 // todo: put it this a controller
 router.get('/get-parking-data', (req, res, next) => {
-	const { parkData } = jsonData;
-	const filteredParkData = parkData.length ? parkData.filter(pd => pd.isParked) : []
+	const { parkData, cars } = jsonData;
+	const filteredParkData = parkData.length ? parkData.map(pd => {
+		const carData = cars.find(c => c.carId === pd.carId);
+		return {...pd, type: carData.type}
+	}).filter(pd => pd.isParked) : [];
 	return res.status(200).json(filteredParkData);
 })
 
