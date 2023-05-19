@@ -152,7 +152,7 @@ router.post('/park', (req, res, next) => {
 					}
 
 
-					return res.status(200).json({
+					return res.status(201).json({
 						data: {...newParkData, slotData: assignedSlot.slotData},
 						message: 'Data saved successfully'
 					})
@@ -160,14 +160,14 @@ router.post('/park', (req, res, next) => {
 				})
 				
 			} else {
-				return res.status(500).json({
+				return res.status(404).json({
 					data: [],
 					message: 'There are no parking slots available.'
 				});
 			}
 
 		} else {
-			return res.status(500).json({
+			return res.status(404).json({
 				data: [],
 				message: 'There are no parking slots available.'
 			});
