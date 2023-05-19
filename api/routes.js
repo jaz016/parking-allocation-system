@@ -3,7 +3,7 @@ const path = require('path');
 const express = require('express');
 const router = express.Router();
 
-const { formatISO } = require('date-fns');
+const { parseISO, differenceInMinutes } = require('date-fns');
 const { utcToZonedTime, format } = require('date-fns-tz')
 
 const jsonPath = path.join(__dirname, 'data.json');
@@ -133,7 +133,7 @@ router.post('/park', (req, res, next) => {
 					parkDataId: nextParkDataId,
 					slotId: assignedSlot.slotId,
 					carId: newCar.carId,
-					start: formatISO(utcToZonedTime(new Date(), 'Asia/Manila')),
+					start: format(utcToZonedTime(new Date(), 'Asia/Manila'), "yyyy-MM-dd'T'HH:mm:ss'Z'"),
 					isParked: true
 				}
 
@@ -191,5 +191,101 @@ router.post('/park', (req, res, next) => {
 
 })
 
+
+// todo: put it this a controller
+router.delete('/unpark/:carId', (req, res, next) => {
+	const { carId } = req.params;
+	const { parkData, cars } = jsonData;
+	const { entryPoints, parkingSlots } = jsonData.parkingLot;
+
+	// todo: add validation for carId if isNaN
+
+
+	const parkDataIdx = parkData.findIndex(pd => pd.carId == carId && pd.isParked);
+	const carIdx = cars.findIndex(c => c.carId == carId);
+
+	if(parkDataIdx !== -1 && carIdx !== -1) {
+
+		const now = parseISO(format(utcToZonedTime(new Date(), 'Asia/Manila'), "yyyy-MM-dd'T'HH:mm:ss'Z'"));
+		let fetchedParkData = parkData[parkDataIdx];
+		let fetchCarData = cars[carIdx];
+		const slot = parkingSlots.find(ps => fetchedParkData.slotId == ps.slotId);
+		const slotSize = slot.slotData[entryPoints];
+
+
+		// console.log('slot', slot);
+		console.log('slotSize', slotSize);
+		// console.log('fetchedParkData',fetchedParkData);
+		// console.log('fetchCarData',fetchCarData);
+
+		const hrsElapsed = (differenceInMinutes(now, parseISO(fetchedParkData.start)) / 60).toFixed(2);
+		console.log('hrsElapsed', hrsElapsed);
+
+
+		const cost = calculateCost(hrsElapsed, slotSize);
+		console.log('cost',cost);
+
+		fetchedParkData.isParked = fetchCarData.isParked = false; // IMPORTANT: uncomment this!
+
+		// todo: create util function for this
+		fs.writeFile(jsonPath, JSON.stringify(jsonData), (err) => {
+			if(err) {
+				console.log('error: ', err.message); // todo, detail error msg
+				return res.status(500).json({
+					data: [],
+					message: 'Something went wrong'
+				})
+			}
+			return res.status(200).json({
+				data: {
+					cost,
+					parkHours: parseFloat(hrsElapsed),
+					parkData: fetchedParkData
+				},
+				message: 'Successfully unparked'
+			})
+
+		})
+
+		// return res.status(200).json({
+		// 	data: [],
+		// 	message: 'test'
+		// });
+	
+	} else {
+		return res.status(404).json({
+			data: [],
+			message: 'Did not find any active parking data related to car ID: ' + carId
+		});
+	}
+
+	function calculateCost(hours, slotSize) {
+		// const hoursRounded = Math.ceil(hours);
+		const hoursRounded = parseFloat(hours).toFixed(0);
+		const initialCost = 40;
+
+		if(hoursRounded <= 3)
+			return initialCost;
+		else {
+			switch(slotSize) {
+				case 0: return initialCost + (20 * (hoursRounded-3))
+				case 1: return initialCost + (60 * (hoursRounded-3))
+				case 2: return initialCost + (100 * (hoursRounded-3))
+				default: return 0;
+			}
+		}
+	}
+});
+
+
+// router.get('/test', (req, res, next) => {
+// 	console.log(format(new Date(), "yyyy-MM-dd'T'HH:mm:ss'Z'"));
+// 	// console.log(new Date().toISOString());
+
+// 	return res.status(200).json({
+// 		data: [],
+// 		message: 'test'
+// 	})
+// })
 
 module.exports = router;
