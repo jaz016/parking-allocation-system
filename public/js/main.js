@@ -117,7 +117,6 @@ parkingLotForm.addEventListener('submit', async e => {
 				entryPoints: parseInt(entryPoints),
 				parkingSlots: parkingSlots.split('\n').map(p => p.split(',').map(c => parseInt(c)))
 			}
-			console.log(JSON.stringify(payload));
 			const response = await fetch('http://localhost:3000/save-parking-lot', {
 				method: 'POST',
 				headers: {
@@ -152,7 +151,6 @@ parkForm.addEventListener('submit', async e => {
 		const payload = {
 			type
 		}
-		console.log(JSON.stringify(payload));
 		const response = await fetch('http://localhost:3000/park', {
 			method: 'POST',
 			headers: {

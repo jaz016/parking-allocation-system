@@ -33,9 +33,6 @@ router.post('/save-parking-lot', (req, res, next) => {
 
 	const { entryPoints, parkingSlots } = req.body;
 
-	// console.log('entryPoints',entryPoints);
-	// console.log('parkingSlots',parkingSlots);
-
 	// todo: put this in a class, add models
 	jsonData.parkingLot = {
 		entryPoints,
@@ -88,10 +85,7 @@ router.post('/park', (req, res, next) => {
 
 
 	// routine 0: insert into cars data
-	console.log('jsonData.cars',jsonData.cars);
 	const nextId = jsonData.cars.length > 0 ? Math.max(...jsonData.cars.map(car => car.carId)) + 1 : 1;
-	console.log('nextId', nextId);
-
 	const newCar = {
 		carId: nextId,
 		type: type,
@@ -109,18 +103,13 @@ router.post('/park', (req, res, next) => {
 	if(parkingSlots.length) {
 
 		const allowedParkingSize = getAllowedParkingSize(type);
-		console.log('allowedParkingSize',allowedParkingSize);
-		console.log('parkingSlots',parkingSlots);
 
 		// filter only slots that are available for the car type
 		const filteredParkingSlotsBySize = parkingSlots.filter(slot => allowedParkingSize.includes(slot.slotData[entryPoints]));
-		console.log('filteredParkingSlotsBySize',filteredParkingSlotsBySize);
 
 		if(filteredParkingSlotsBySize.length) {
-			console.log('parkData', parkData);
 
 			const filteredParkingSlots = filteredParkingSlotsBySize.filter(slot => parkData.findIndex(pd => pd.slotId === slot.slotId && pd.isParked) === -1 );
-			console.log('filteredParkingSlots',filteredParkingSlots);
 
 			if(filteredParkingSlots.length) {
 
@@ -138,12 +127,7 @@ router.post('/park', (req, res, next) => {
 				})[0];
 
 
-				console.log('assignedSlot', assignedSlot);
-
 				const nextParkDataId = parkData.length > 0 ? Math.max(...parkData.map(pd => pd.parkDataId)) + 1 : 1;
-				console.log('nextParkDataId', nextParkDataId);
-				
-
 				// insert into parkData
 				const newParkData = {
 					parkDataId: nextParkDataId,
@@ -153,9 +137,7 @@ router.post('/park', (req, res, next) => {
 					isParked: true
 				}
 
-				console.log('newParkData',newParkData);
 				parkData.push(newParkData); // todo: put this in a class (instantiate a car object), add models
-
 
 				// todo: create util function for this
 				fs.writeFile(jsonPath, JSON.stringify(jsonData), (err) => {
@@ -167,12 +149,10 @@ router.post('/park', (req, res, next) => {
 						})
 					}
 
-
 					return res.status(201).json({
 						data: {...newParkData, slotData: assignedSlot.slotData},
 						message: 'Data saved successfully'
 					})
-
 				})
 				
 			} else {
@@ -227,21 +207,10 @@ router.delete('/unpark/:carId', (req, res, next) => {
 		let fetchCarData = cars[carIdx];
 		const slot = parkingSlots.find(ps => fetchedParkData.slotId == ps.slotId);
 		const slotSize = slot.slotData[entryPoints];
-
-
-		// console.log('slot', slot);
-		console.log('slotSize', slotSize);
-		// console.log('fetchedParkData',fetchedParkData);
-		// console.log('fetchCarData',fetchCarData);
-
 		const hrsElapsed = (differenceInMinutes(now, parseISO(fetchedParkData.start)) / 60).toFixed(2);
-		console.log('hrsElapsed', hrsElapsed);
-
-
 		const cost = calculateCost(hrsElapsed, slotSize);
-		console.log('cost',cost);
 
-		fetchedParkData.isParked = fetchCarData.isParked = false; // IMPORTANT: uncomment this!
+		fetchedParkData.isParked = fetchCarData.isParked = false;
 
 		// todo: create util function for this
 		fs.writeFile(jsonPath, JSON.stringify(jsonData), (err) => {
@@ -293,16 +262,5 @@ router.delete('/unpark/:carId', (req, res, next) => {
 		}
 	}
 });
-
-
-// router.get('/test', (req, res, next) => {
-// 	console.log(format(new Date(), "yyyy-MM-dd'T'HH:mm:ss'Z'"));
-// 	// console.log(new Date().toISOString());
-
-// 	return res.status(200).json({
-// 		data: [],
-// 		message: 'test'
-// 	})
-// })
 
 module.exports = router;
