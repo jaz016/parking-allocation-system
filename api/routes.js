@@ -19,11 +19,14 @@ router.get('/get-parking-lot', (req, res, next) => {
 
 // todo: put it this a controller
 router.get('/get-parking-data', (req, res, next) => {
+
 	const { parkData, cars } = jsonData;
 	const filteredParkData = parkData.length ? parkData.map(pd => {
 		const carData = cars.find(c => c.carId === pd.carId);
 		return {...pd, type: carData.type}
 	}).filter(pd => pd.isParked) : [];
+
+
 	return res.status(200).json(filteredParkData);
 })
 
@@ -43,6 +46,9 @@ router.post('/save-parking-lot', (req, res, next) => {
 
 	// clear parked cars
 	jsonData.parkData = [];
+	jsonData.cars = jsonData.cars.length ? jsonData.cars.filter(c => c.isParked).map(c => {
+		return {...c, isParked: false}
+	}) : []
 
 	// todo: create util function for this
 	fs.writeFile(jsonPath, JSON.stringify(jsonData), (err) => {
@@ -69,11 +75,6 @@ router.post('/save-parking-lot', (req, res, next) => {
 			})
 		})
 	})
-
-	// return res.status(200).json({
-	// 	data: 'test',
-	// 	message: 'success'
-	// })
 
 });
 
@@ -109,6 +110,7 @@ router.post('/park', (req, res, next) => {
 
 		if(filteredParkingSlotsBySize.length) {
 
+			// filter further by vacant parking slots
 			const filteredParkingSlots = filteredParkingSlotsBySize.filter(slot => parkData.findIndex(pd => pd.slotId === slot.slotId && pd.isParked) === -1 );
 
 			if(filteredParkingSlots.length) {
@@ -200,6 +202,7 @@ router.delete('/unpark/:carId', (req, res, next) => {
 	const parkDataIdx = parkData.findIndex(pd => pd.carId == carId && pd.isParked);
 	const carIdx = cars.findIndex(c => c.carId == carId);
 
+	// check if there's a parkData, car data for the car ID being passed
 	if(parkDataIdx !== -1 && carIdx !== -1) {
 
 		const now = parseISO(format(utcToZonedTime(new Date(), 'Asia/Manila'), "yyyy-MM-dd'T'HH:mm:ss'Z'"));
@@ -231,11 +234,6 @@ router.delete('/unpark/:carId', (req, res, next) => {
 			})
 
 		})
-
-		// return res.status(200).json({
-		// 	data: [],
-		// 	message: 'test'
-		// });
 	
 	} else {
 		return res.status(404).json({
@@ -248,7 +246,7 @@ router.delete('/unpark/:carId', (req, res, next) => {
 		// const hoursRounded = Math.ceil(hours);
 		const hoursRounded = parseFloat(hours).toFixed(0);
 		const initialCost = 40;
-		const chunkCost = hoursRounded >= 24 ? 5000 * (Math.floor(hoursRounded/24)) : 0;
+		const chunkCost = hoursRounded >= 24 ? 5000 * (Math.floor(hoursRounded/24)) : 0; // 24 hour cost setup
 
 		if(hoursRounded <= 3)
 			return initialCost;

@@ -16,8 +16,12 @@ async function fetchParkingLot() {
 		const data = await response.json();
 		const { parkingSlots } = data;
 		globalParkingSlots = [...parkingSlots];
+
+		// reset parkingSlotsArea content
 		const parkingSlotsArea = document.getElementById("parking-slots-area");
 		parkingSlotsArea.innerHTML = '';
+
+		// generate ul li elements from parkingSlots data
 		const ul = document.createElement("ul");
 		ul.className = 'list-group';
 
@@ -44,6 +48,7 @@ async function fetchParkData() {
 		const parkData = data;
 		globalParkData = [...parkData];
 		
+		// include slotData (slot name) in fetched parkData
 		const newParkData = globalParkData.map(pd => {
 			const foundSlotData = globalParkingSlots.find(ps => pd.slotId === ps.slotId);
 			return {
@@ -51,9 +56,11 @@ async function fetchParkData() {
 			}
 		});
 
-		
+		// reset parkedCarsArea content
 		const parkedCarsArea = document.getElementById("parked-cars");
 		parkedCarsArea.innerHTML = '';
+
+		// generate ul li elements from newParkData
 		const ul = document.createElement("ul");
 		ul.className = 'list-group list-group-flush';
 
@@ -69,19 +76,19 @@ async function fetchParkData() {
 			anchor.setAttribute('data-url', `http://localhost:3000/unpark/${pd.carId}`);
 			anchor.textContent = 'Unpark';
 
-
+			// event listener for each Unpark link
 			anchor.addEventListener('click', async e => {
 				e.preventDefault();
 
 				if(confirm('Are you sure you want to unpark this car? Appropriate charges will apply.')) {
+					
 					const url = e.target.dataset.url;
 					const response = await fetch(url, {
 						method: 'DELETE'
 					});
+
 					const { data } = await response.json();
-
 					alert(`You have unparked the car. You have been charged a fee of Php${data.cost} for having parked ${data.parkHours} hours.`)
-
 					fetchParkData();
 				}
 				
