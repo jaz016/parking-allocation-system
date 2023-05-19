@@ -279,14 +279,15 @@ router.delete('/unpark/:carId', (req, res, next) => {
 		// const hoursRounded = Math.ceil(hours);
 		const hoursRounded = parseFloat(hours).toFixed(0);
 		const initialCost = 40;
+		const chunkCost = hoursRounded >= 24 ? 5000 * (Math.floor(hoursRounded/24)) : 0;
 
 		if(hoursRounded <= 3)
 			return initialCost;
 		else {
 			switch(slotSize) {
-				case 0: return initialCost + (20 * (hoursRounded-3))
-				case 1: return initialCost + (60 * (hoursRounded-3))
-				case 2: return initialCost + (100 * (hoursRounded-3))
+				case 0: return !chunkCost ? initialCost + (20 * (hoursRounded-3)) : chunkCost + (hoursRounded-24 <= 3 ? initialCost : 20 * (parseFloat(hoursRounded - 24).toFixed(0)));
+				case 1: return !chunkCost ? initialCost + (60 * (hoursRounded-3)) : chunkCost + (hoursRounded-24 <= 3 ? initialCost : 60 * (parseFloat(hoursRounded - 24).toFixed(0)));
+				case 2: return !chunkCost ? initialCost + (100 * (hoursRounded-3)) : chunkCost + (hoursRounded-24 <= 3 ? initialCost : 100 * (parseFloat(hoursRounded - 24).toFixed(0)));
 				default: return 0;
 			}
 		}
